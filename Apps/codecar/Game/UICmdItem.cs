@@ -4,15 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-
-public delegate void OnUICmdItemTouchMoveDelegate(UICmdItem item, PointerEventData eventData);
-public delegate void OnUICmdItemTouchUpDelegate(UICmdItem item, PointerEventData eventData);
+public delegate void OnUICmdItemTouchEventDelegate(UICmdItem item, PointerEventData eventData, int status);
 // public class CmdItemInfo
 // {
 //     UICmdItem.CmdType type;
 // }
 //UICmdItem 有IDragHandler  的时候 scrollview滑动会失效
-public class UICmdItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
+public class UICmdItem : MonoBehaviour
 {
     public enum CmdType
     {
@@ -32,14 +30,17 @@ public class UICmdItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public int index;
     public CmdType cmdType;
     public Vector2 posTouchDown;//　transform.position　canvase ui 的屏幕坐标
-    public OnUICmdItemTouchMoveDelegate callbackTouchMove { get; set; }
-    public OnUICmdItemTouchUpDelegate callbackTouchUp { get; set; }
+    public Vector2 localPosNormal;
+    UITouchEvent uiTouchEvent;
+    public OnUICmdItemTouchEventDelegate callBackTouch { get; set; }
 
     /// <summary>
     /// Awake is called when the script instance is being loaded.
     /// </summary>
     void Awake()
     {
+        uiTouchEvent = this.gameObject.AddComponent<UITouchEvent>();
+        uiTouchEvent.callBackTouch = OnUITouchEvent;
 
         Texture2D tex = TextureCache.main.Load(AppRes.IMAGE_CMDITEM_BG);
         if (tex != null)
@@ -51,7 +52,7 @@ public class UICmdItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         imageBoard.gameObject.SetActive(isShow);
         imageCmd.gameObject.SetActive(!isShow);
-        textCount.gameObject.SetActive(!isShow);
+        //  textCount.gameObject.SetActive(!isShow);
         imageBg.gameObject.SetActive(!isShow);
     }
     public void UpdateItem()
@@ -98,6 +99,31 @@ public class UICmdItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
         }
     }
 
+    public void OnUITouchEvent(UITouchEvent ev, PointerEventData eventData, int status)
+    {
+        if (cmdType == CmdType.NONE)
+        {
+            return;
+        }
+        switch (status)
+        {
+            case UITouchEvent.STATUS_TOUCH_DOWN:
+                OnPointerDown(eventData);
+                break;
+
+            case UITouchEvent.STATUS_TOUCH_MOVE:
+                OnDrag(eventData);
+                break;
+
+            case UITouchEvent.STATUS_TOUCH_UP:
+                OnPointerUp(eventData);
+                break;
+        }
+        if (callBackTouch != null)
+        {
+            callBackTouch(this, eventData, status);
+        }
+    }
 
     //相当于touchDown
     public void OnPointerDown(PointerEventData eventData)
@@ -116,10 +142,6 @@ public class UICmdItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public void OnPointerUp(PointerEventData eventData)
     {
 
-        if (this.callbackTouchUp != null)
-        {
-            this.callbackTouchUp(this, eventData);
-        }
 
     }
     //相当于touchMove
@@ -127,10 +149,7 @@ public class UICmdItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     {
         // this.gameObject.transform.position = eventData.pointerPressRaycast.worldPosition;
 
-        if (this.callbackTouchMove != null)
-        {
-            this.callbackTouchMove(this, eventData);
-        }
+
     }
 }
 

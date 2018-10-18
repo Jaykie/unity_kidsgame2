@@ -15,7 +15,8 @@ public class UICmdBarRun : UIView
 
     UICmdItem uiCmdItemPrefab;
     public List<UICmdItem> listItem;
-
+    public ScrollRect scrollRect;
+    float widthItem;
     /// <summary>
     /// Awake is called when the script instance is being loaded.
     /// </summary>
@@ -24,7 +25,7 @@ public class UICmdBarRun : UIView
         listItem = new List<UICmdItem>();
         GameObject obj = PrefabCache.main.Load(AppRes.PREFAB_CmdItem);
         uiCmdItemPrefab = obj.GetComponent<UICmdItem>();
- 
+        scrollRect = objScrollView.GetComponent<ScrollRect>();
         // AddItem(UICmdItem.CmdType.RIGHT);
         // AddItem(UICmdItem.CmdType.UP);
         // AddItem(UICmdItem.CmdType.RIGHT);//RIGHT
@@ -43,20 +44,20 @@ public class UICmdBarRun : UIView
 
     void LayOutItem()
     {
-        float x, y, w, h;
-        float step = 4;
-        int i = 0;
-        foreach (UICmdItem item in listItem)
-        {
-            RectTransform rctran = item.GetComponent<RectTransform>();
-            w = (this.frame.width - step * (listItem.Count + 1)) / listItem.Count;
-            h = this.frame.height - step * 2;
-            y = 0;
-            x = w * i + step * (i + 1) + w / 2;
-            x += -this.frame.width / 2;
-            rctran.anchoredPosition = new Vector2(x, y);
-            i++;
-        }
+        // float x, y, w, h;
+        // float step = 4;
+        // int i = 0;
+        // foreach (UICmdItem item in listItem)
+        // {
+        //     RectTransform rctran = item.GetComponent<RectTransform>();
+        //     w = (this.frame.width - step * (listItem.Count + 1)) / listItem.Count;
+        //     h = this.frame.height - step * 2;
+        //     y = 0;
+        //     x = w * i + step * (i + 1) + w / 2;
+        //     x += -this.frame.width / 2;
+        //     rctran.anchoredPosition = new Vector2(x, y);
+        //     i++;
+        // }
     }
 
     public void AddItem(UICmdItem.CmdType type)
@@ -69,15 +70,16 @@ public class UICmdBarRun : UIView
         cmdItem.transform.localPosition = new Vector3(0, 0, 0);
         cmdItem.index = idx;
         cmdItem.cmdType = type;
-        cmdItem.callbackTouchMove = OnUICmdItemTouchMove;
-        cmdItem.callbackTouchUp = OnUICmdItemTouchUp;
+        cmdItem.callBackTouch = OnUITouchEvent;
         cmdItem.UpdateItem();
 
         //更新scrollview 内容的长度
         RectTransform rctranItem = cmdItem.GetComponent<RectTransform>();
         RectTransform rctran = objScrollViewContent.GetComponent<RectTransform>();
         Vector2 size = rctran.sizeDelta;
-        size.x = rctranItem.rect.width * (idx + 1);
+        widthItem = rctranItem.rect.width;
+        Debug.Log("widthItem=" + widthItem);
+        size.x = widthItem * (idx + 1);
         rctran.sizeDelta = size;
 
         listItem.Add(cmdItem);
@@ -88,21 +90,48 @@ public class UICmdBarRun : UIView
     public bool IsItemInTheBar(UICmdItem item)
     {
         bool ret = false;
+
+        return ret;
+    }
+    public Transform GetItemParent(UICmdItem item)
+    {
+        Transform t = null;
         foreach (UICmdItem item_bar in listItem)
         {
-            RectTransform rctran = item.GetComponent<RectTransform>();
-            Vector2 pt = rctran.rect.center;
+            Vector2 posNow = item.gameObject.transform.position;
             RectTransform rctran_bar = item_bar.GetComponent<RectTransform>();
-            if (rctran_bar.rect.Contains(pt))
+            Vector2 posBar = item_bar.gameObject.transform.position;
+            float w_screen = Common.CanvasToScreenWidth(AppSceneBase.main.sizeCanvas, rctran_bar.rect.width);
+            float h_screen = Common.CanvasToScreenWidth(AppSceneBase.main.sizeCanvas, rctran_bar.rect.height);
+            Rect rc = new Rect(posBar.x - w_screen / 2, posBar.y - h_screen / 2, w_screen, h_screen);
+            if (rc.Contains(posNow))
             {
-                ret = true;
+                t = item_bar.transform;
                 break;
             }
 
         }
-        return ret;
+        return t;
     }
 
+
+    public void OnUITouchEvent(UICmdItem item, PointerEventData eventData, int status)
+    {
+        switch (status)
+        {
+            case UITouchEvent.STATUS_TOUCH_DOWN:
+
+                break;
+
+            case UITouchEvent.STATUS_TOUCH_MOVE:
+                OnUICmdItemTouchMove(item, eventData);
+                break;
+
+            case UITouchEvent.STATUS_TOUCH_UP:
+                OnUICmdItemTouchUp(item, eventData);
+                break;
+        }
+    }
     public void OnUICmdItemTouchMove(UICmdItem item, PointerEventData eventData)
     {
         Vector2 posScreen = eventData.position;
@@ -132,12 +161,16 @@ public class UICmdBarRun : UIView
     }
     public void OnClickBtnPre()
     {
-
+        Vector2 pos = scrollRect.content.anchoredPosition;
+        pos.x += widthItem;
+        scrollRect.content.anchoredPosition = pos;
     }
 
     public void OnClickBtnNext()
     {
-
+        Vector2 pos = scrollRect.content.anchoredPosition;
+        pos.x -= widthItem;
+        scrollRect.content.anchoredPosition = pos;
     }
 
     public void OnClickBtnReset()

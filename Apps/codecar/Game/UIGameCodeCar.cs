@@ -137,7 +137,7 @@ public class UIGameCodeCar : UIGameBase
 
     void InitCmdRun()
     {
-        int total = 5;
+        int total = 20;
         for (int i = 0; i < total; i++)
         {
             uiCmdBarRun.AddItem(UICmdItem.CmdType.NONE);

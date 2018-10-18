@@ -58,6 +58,7 @@ public class UICmdBarSelect : UIView
             y = h * i + step * (i + 1) + h / 2;
             y += -this.frame.height / 2;
             rctran.anchoredPosition = new Vector2(x, y);
+            item.localPosNormal = item.transform.localPosition;
             i++;
         }
     }
@@ -70,13 +71,35 @@ public class UICmdBarSelect : UIView
         cmdItem.transform.localPosition = new Vector3(0, 0, 0);
         cmdItem.index = idx;
         cmdItem.cmdType = type;
-        cmdItem.callbackTouchMove = OnUICmdItemTouchMove;
-        cmdItem.callbackTouchUp = OnUICmdItemTouchUp;
+        cmdItem.callBackTouch = OnUITouchEvent;
         cmdItem.UpdateItem();
+        cmdItem.localPosNormal = cmdItem.transform.localPosition;
         listItem.Add(cmdItem);
 
     }
 
+    public void OnUITouchEvent(UICmdItem item, PointerEventData eventData, int status)
+    {
+        switch (status)
+        {
+            case UITouchEvent.STATUS_TOUCH_DOWN:
+                OnUICmdItemTouchDown(item, eventData);
+                break;
+
+            case UITouchEvent.STATUS_TOUCH_MOVE:
+                OnUICmdItemTouchMove(item, eventData);
+                break;
+
+            case UITouchEvent.STATUS_TOUCH_UP:
+                OnUICmdItemTouchUp(item, eventData);
+                break;
+        }
+    }
+    public void OnUICmdItemTouchDown(UICmdItem item, PointerEventData eventData)
+    {
+
+
+    }
     public void OnUICmdItemTouchMove(UICmdItem item, PointerEventData eventData)
     {
         Vector2 posScreen = eventData.position;
@@ -89,22 +112,25 @@ public class UICmdBarSelect : UIView
     public void OnUICmdItemTouchUp(UICmdItem item, PointerEventData eventData)
     {
         Vector2 posScreen = eventData.position;
-        bool ret = uiCmdBarRun.IsItemInTheBar(item);
-        if (!ret)
+        Transform parent = uiCmdBarRun.GetItemParent(item);
+        if (parent != null)
         {
-            //恢复位置 
-
+            //显示在run bar上面
+            item.transform.parent = parent;
+            RectTransform rt = item.GetComponent<RectTransform>();
+            rt.anchoredPosition = Vector2.zero;
+            return;
         }
         Debug.Log("posScreen =" + posScreen + " item.posTouchDown=" + item.posTouchDown);
         float action_time = 1f;
         RectTransform rctran = item.GetComponent<RectTransform>();
-        Vector2 pt = item.posTouchDown;
-        // 
-        rctran.DOMove(pt, action_time).SetEase(Ease.InOutSine).OnComplete(
+        Vector2 pt = item.localPosNormal;
+        item.transform.parent = this.transform;
+        rctran.DOLocalMove(pt, action_time).SetEase(Ease.InOutSine).OnComplete(
             () =>
             {
-                item.transform.parent = this.transform;
-                LayOutItem();
+                Debug.Log("rctran.localPosition=" + rctran.localPosition);
+                // LayOutItem();
             }
         );
     }
