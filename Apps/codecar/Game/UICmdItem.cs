@@ -32,6 +32,8 @@ public class UICmdItem : MonoBehaviour
     public Vector2 posTouchDown;//　transform.position　canvase ui 的屏幕坐标
     public Vector2 localPosNormal;
     UITouchEvent uiTouchEvent;
+
+    public bool enableTouch;
     public OnUICmdItemTouchEventDelegate callBackTouch { get; set; }
 
     /// <summary>
@@ -41,7 +43,8 @@ public class UICmdItem : MonoBehaviour
     {
         uiTouchEvent = this.gameObject.AddComponent<UITouchEvent>();
         uiTouchEvent.callBackTouch = OnUITouchEvent;
-
+        enableTouch = true;
+        textCount.gameObject.SetActive(false);
         Texture2D tex = TextureCache.main.Load(AppRes.IMAGE_CMDITEM_BG);
         if (tex != null)
         {
@@ -52,9 +55,14 @@ public class UICmdItem : MonoBehaviour
     {
         imageBoard.gameObject.SetActive(isShow);
         imageCmd.gameObject.SetActive(!isShow);
-        //  textCount.gameObject.SetActive(!isShow);
         imageBg.gameObject.SetActive(!isShow);
+
     }
+    public void ShowTextCount(bool isShow)
+    {
+
+    }
+
     public void UpdateItem()
     {
         textCount.text = index.ToString();
@@ -92,15 +100,21 @@ public class UICmdItem : MonoBehaviour
         if (cmdType == CmdType.NONE)
         {
             ShowBoard(true);
+            //  ShowTextCount(false);
         }
         else
         {
             ShowBoard(false);
+            //   ShowTextCount(true);
         }
     }
 
     public void OnUITouchEvent(UITouchEvent ev, PointerEventData eventData, int status)
     {
+        if (!enableTouch)
+        {
+            return;
+        }
         if (cmdType == CmdType.NONE)
         {
             return;

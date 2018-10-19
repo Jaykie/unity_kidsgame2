@@ -11,7 +11,7 @@ public class UICmdBarSelect : UIView
     public Image imageBg;
     public UICmdBarRun uiCmdBarRun;
 
-    UICmdItem uiCmdItemPrefab;
+    UIItemSelect uiItemSelectPrefab;
 
     int indextmp;
     List<object> listItem;
@@ -22,8 +22,8 @@ public class UICmdBarSelect : UIView
     void Awake()
     {
         listItem = new List<object>();
-        GameObject obj = PrefabCache.main.Load(AppRes.PREFAB_CmdItem);
-        uiCmdItemPrefab = obj.GetComponent<UICmdItem>();
+        GameObject obj = PrefabCache.main.Load(AppRes.PREFAB_Item_Select);
+        uiItemSelectPrefab = obj.GetComponent<UIItemSelect>();
         indextmp = 0;
         AddItem(UICmdItem.CmdType.START);
         AddItem(UICmdItem.CmdType.LEFT);
@@ -49,7 +49,7 @@ public class UICmdBarSelect : UIView
         float x, y, w, h;
         float step = 4;
         int i = 0;
-        foreach (UICmdItem item in listItem)
+        foreach (UIItemSelect item in listItem)
         {
             RectTransform rctran = item.GetComponent<RectTransform>();
             h = (this.frame.height - step * (listItem.Count + 1)) / listItem.Count;
@@ -58,97 +58,30 @@ public class UICmdBarSelect : UIView
             y = h * i + step * (i + 1) + h / 2;
             y += -this.frame.height / 2;
             rctran.anchoredPosition = new Vector2(x, y);
-            item.localPosNormal = item.transform.localPosition;
+            // item.localPosNormal = item.transform.localPosition;
             i++;
         }
     }
     public void AddItem(UICmdItem.CmdType type)
     {
         int idx = indextmp++;
-        UICmdItem cmdItem = (UICmdItem)GameObject.Instantiate(uiCmdItemPrefab);
-        cmdItem.transform.parent = this.transform;
-        cmdItem.transform.localScale = new Vector3(1, 1, 1);
-        cmdItem.transform.localPosition = new Vector3(0, 0, 0);
-        cmdItem.index = idx;
-        cmdItem.cmdType = type;
-        cmdItem.callBackTouch = OnUITouchEvent;
-        cmdItem.UpdateItem();
-        cmdItem.localPosNormal = cmdItem.transform.localPosition;
-        listItem.Add(cmdItem);
-
-    }
-
-    public void OnUITouchEvent(UICmdItem item, PointerEventData eventData, int status)
-    {
-        switch (status)
-        {
-            case UITouchEvent.STATUS_TOUCH_DOWN:
-                OnUICmdItemTouchDown(item, eventData);
-                break;
-
-            case UITouchEvent.STATUS_TOUCH_MOVE:
-                OnUICmdItemTouchMove(item, eventData);
-                break;
-
-            case UITouchEvent.STATUS_TOUCH_UP:
-                OnUICmdItemTouchUp(item, eventData);
-                break;
-        }
-    }
-    public void OnUICmdItemTouchDown(UICmdItem item, PointerEventData eventData)
-    {
-
-
-    }
-    public void OnUICmdItemTouchMove(UICmdItem item, PointerEventData eventData)
-    {
-        Vector2 posScreen = eventData.position;
-        //position 当gameObject为canvas元素时为屏幕坐标而非世界坐标
-        item.gameObject.transform.position = posScreen;
-        item.transform.parent = AppSceneBase.main.canvasMain.transform;
-
-    }
-
-    public void OnUICmdItemTouchUp(UICmdItem item, PointerEventData eventData)
-    {
-        Vector2 posScreen = eventData.position;
-        Transform parent = uiCmdBarRun.GetItemParent(item);
-        if (parent != null)
-        {
-            //显示在run bar上面
-            item.transform.parent = parent;
-            RectTransform rt = item.GetComponent<RectTransform>();
-            rt.anchoredPosition = Vector2.zero;
-            return;
-        }
-        Debug.Log("posScreen =" + posScreen + " item.posTouchDown=" + item.posTouchDown);
-        float action_time = 1f;
-        RectTransform rctran = item.GetComponent<RectTransform>();
-        Vector2 pt = item.localPosNormal;
+        UIItemSelect item = (UIItemSelect)GameObject.Instantiate(uiItemSelectPrefab);
         item.transform.parent = this.transform;
-        rctran.DOLocalMove(pt, action_time).SetEase(Ease.InOutSine).OnComplete(
-            () =>
-            {
-                Debug.Log("rctran.localPosition=" + rctran.localPosition);
-                // LayOutItem();
-            }
-        );
-    }
+        item.transform.localScale = new Vector3(1, 1, 1);
+        item.transform.localPosition = new Vector3(0, 0, 0);
+        item.index = idx;
+        item.cmdType = type;
+        item.uiCmdBarRun = uiCmdBarRun;
+        item.maxCount = 4;
+        // cmdItem.callBackTouch = OnUITouchEvent;
+        //  cmdItem.UpdateItem();
+        //  cmdItem.localPosNormal = cmdItem.transform.localPosition;
+        item.AddItem(type);
+        listItem.Add(item);
 
-    public void OnClickBtnPre()
-    {
 
-    }
-
-    public void OnClickBtnNext()
-    {
-
-    }
-
-    public void OnClickBtnReset()
-    {
-
-    }
+    } 
+ 
 
 }
 

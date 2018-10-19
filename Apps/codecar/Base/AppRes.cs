@@ -30,6 +30,8 @@ public class AppRes
     //prefab  
     public const string PREFAB_GUANKA_CELL_ITEM = "App/Prefab/Guanka/UIGuankaCellItem";
     public const string PREFAB_CmdItem = "App/Prefab/Game/CmdItem/UICmdItem";
+    public const string PREFAB_Item_Select = "App/Prefab/Game/CmdItem/UIItemSelect";
+
     public const string PREFAB_SETTING = "App/Prefab/Setting/UISettingController";
     public const string PREFAB_MOREAPP_CELL_ITEM = "App/Prefab/MoreApp/UIMoreAppCellItem";
 
