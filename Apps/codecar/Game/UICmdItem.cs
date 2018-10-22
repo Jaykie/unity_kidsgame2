@@ -25,12 +25,12 @@ public class UICmdItem : MonoBehaviour
     public Image imageBg;
     public Image imageCmd;
     public Text textCount;
-    public Image imageAlpha;
+    public Image imageLockBg;
     public Image imageBoard;
     public int index;
     public CmdType cmdType;
     public Vector2 posTouchDown;//　transform.position　canvase ui 的屏幕坐标
-    public Vector2 localPosNormal;
+    public Vector3 localPosNormal;
     UITouchEvent uiTouchEvent;
 
     public bool enableTouch;
@@ -50,6 +50,12 @@ public class UICmdItem : MonoBehaviour
         {
             imageBg.sprite = LoadTexture.CreateSprieFromTex(tex);
         }
+        SetLock(false);
+    }
+
+    public void SetLock(bool isLock)
+    {
+        imageLockBg.gameObject.SetActive(isLock);
     }
     public void ShowBoard(bool isShow)
     {

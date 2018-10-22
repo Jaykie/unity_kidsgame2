@@ -56,6 +56,21 @@ public class GameCodeCar : UIView, IUIMapItemDelegate
         sizeRect = new Vector2(rctran.rect.width, rctran.rect.height - ofty);
         Debug.Log("sizeRect=" + sizeRect + " ofty=" + ofty);
     }
+    public void Reset()
+    {
+        if (uiCar != null)
+        {
+            uiCar.Reset();
+        }
+    }
+
+    public void SetCarInterface(ICar p)
+    {
+        if (uiCar != null)
+        {
+            uiCar.iCarDelegate = p;
+        }
+    }
 
     void ResizeMainRect()
     {
@@ -123,6 +138,7 @@ public class GameCodeCar : UIView, IUIMapItemDelegate
                 uiCar.iDelegate = this;
                 uiCar.sizeRect = sizeRect;
                 uiCar.uiCmdBarRun = uiCmdBarRun;
+                uiCar.localPositionInit = obj.transform.localPosition;
                 uiCar.SetMapSize(mapSizeX, mapSizeY);
                 uiCar.UpdateGuankaItem(itmeInfoGuanka);
                 uiCar.UpdateItem(w, h);

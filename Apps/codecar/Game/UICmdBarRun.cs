@@ -16,6 +16,8 @@ public class UICmdBarRun : UIView
     UICmdItem uiCmdItemPrefab;
     public List<UICmdItem> listItem;
     public ScrollRect scrollRect;
+
+    public List<UICmdItem.CmdType> listCmd;
     float widthItem;
     /// <summary>
     /// Awake is called when the script instance is being loaded.
@@ -23,6 +25,7 @@ public class UICmdBarRun : UIView
     void Awake()
     {
         listItem = new List<UICmdItem>();
+        listCmd = new List<UICmdItem.CmdType>();
         GameObject obj = PrefabCache.main.Load(AppRes.PREFAB_CmdItem);
         uiCmdItemPrefab = obj.GetComponent<UICmdItem>();
         scrollRect = objScrollView.GetComponent<ScrollRect>();
@@ -41,7 +44,13 @@ public class UICmdBarRun : UIView
     {
 
     }
-
+    public void Reset()
+    {
+        foreach (UICmdItem item in listItem)
+        {
+            item.cmdType = UICmdItem.CmdType.NONE;
+        }
+    }
     void LayOutItem()
     {
         // float x, y, w, h;
@@ -85,6 +94,10 @@ public class UICmdBarRun : UIView
         listItem.Add(cmdItem);
 
     }
+    public void AddCmd(UICmdItem.CmdType type)
+    {
+        listCmd.Add(type);
+    }
 
     // 判断命令位置放置正确
     public bool IsItemInTheBar(UICmdItem item)
@@ -107,6 +120,7 @@ public class UICmdBarRun : UIView
             if (rc.Contains(posNow))
             {
                 t = item_bar.transform;
+                item_bar.cmdType = item.cmdType;
                 break;
             }
 
@@ -175,7 +189,8 @@ public class UICmdBarRun : UIView
 
     public void OnClickBtnReset()
     {
-
+        UIGameCodeCar game = GameViewController.main.gameBase as UIGameCodeCar;
+        game.Reset();
     }
 
 }

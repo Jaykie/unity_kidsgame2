@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public interface ICarMotion
 {
     CarMotion.Move CarMotionGetMoveDirection(CarMotion motion);
-    bool CarMotionIsNearCenter(CarMotion motion);
+    bool CarMotionIsNearCenter(CarMotion motion); 
 }
 public class CarMotion : MonoBehaviour
 {
@@ -27,11 +27,22 @@ public class CarMotion : MonoBehaviour
         CMD//根据命令驾驶 
 
     }
+
+    public enum RunStatus
+    {
+        NONE = 0,//
+        ERROR,//方向错误
+        NO_CMD,//当前barrun所在item cmdtype为none
+        STOP//停止
+
+    }
+
     public GameObject objCar;
     public ICarMotion iDelegate;
     // public Move directionFrom = Move.NONE;
     public Move direction = Move.NONE;
     public RunMode runMode = RunMode.NONE;
+    public RunStatus runStatus = RunStatus.NONE;
     public float moveStep = 0.1f;
     bool isRun = false;
     float timerRun = 0.1f;

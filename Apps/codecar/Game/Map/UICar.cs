@@ -4,6 +4,11 @@ using LitJson;
 using UnityEngine;
 using UnityEngine.UI;
 
+public interface ICar
+{
+    void CarUpdateStatus(UICar car, CarMotion.RunStatus status);
+}
+
 public class UICar : UIMapItem, ICarMotion
 {
     CodeCarItemInfo itmeInfoGuanka;//当前关卡
@@ -18,7 +23,10 @@ public class UICar : UIMapItem, ICarMotion
     public int tileXPre;//上一个位置
     public int tileYPre;
     public Vector2 sizeRect;
+    public Vector3 localPositionInit;
     public UICmdBarRun uiCmdBarRun;
+    public ICar iCarDelegate;
+
     int indexCmd = 0;
     CarMotion.Move[] listMoveNow = new CarMotion.Move[4];
 
@@ -46,6 +54,13 @@ public class UICar : UIMapItem, ICarMotion
     void Update()
     {
 
+    }
+    public void Reset()
+    {
+        carMotion.OnCarStop();
+        indexCmd = 0;
+        this.transform.localRotation = Quaternion.Euler(new Vector3(0, 0, 0));
+        this.transform.localPosition = localPositionInit;
     }
     public void SetMapSize(int x, int y)
     {
@@ -123,6 +138,14 @@ public class UICar : UIMapItem, ICarMotion
                     break;
                 case UICmdItem.CmdType.DOWN:
                     ret = CarMotion.Move.DOWN;
+                    break;
+                case UICmdItem.CmdType.NONE:
+                    ret = CarMotion.Move.NONE;
+                    carMotion.runStatus = CarMotion.RunStatus.NO_CMD;
+                    if (iCarDelegate != null)
+                    {
+                        iCarDelegate.CarUpdateStatus(this, carMotion.runStatus);
+                    }
                     break;
                 default:
 
@@ -291,7 +314,7 @@ public class UICar : UIMapItem, ICarMotion
         ret = listMove[idx];
         return ret;
     }
-    #region ICarMotion
+    #region ICarMotion 
     public bool CarMotionIsNearCenter(CarMotion motion)
     {
         bool ret = false;
@@ -321,8 +344,13 @@ public class UICar : UIMapItem, ICarMotion
                 bool isCorner = IsCornerItem(motion);
                 if (isCorner)
                 {
-                    //切换到下个命令
-                    indexCmd++;
+                    //经过转弯角
+                    if (carMotion.direction != CarMotion.Move.NONE)
+                    {
+                        //切换到下个命令
+                        indexCmd++;
+                    }
+
                 }
             }
 
@@ -358,11 +386,17 @@ public class UICar : UIMapItem, ICarMotion
         else if (carMotion.runMode == CarMotion.RunMode.CMD)
         {
             ret = GetCmdDirection(indexCmd);
+            Debug.Log("GetCmdDirection::ret=" + ret + " indexCmd=" + indexCmd);
             if (IsCmdError(motion, ret, total))
             {
                 //命令错误 停止运动
                 Debug.Log("cmd is wrong,stop...");
                 ret = CarMotion.Move.NONE;
+                carMotion.runStatus = CarMotion.RunStatus.ERROR;
+                if (iCarDelegate != null)
+                {
+                    iCarDelegate.CarUpdateStatus(this, carMotion.runStatus);
+                }
             }
         }
 
@@ -372,6 +406,12 @@ public class UICar : UIMapItem, ICarMotion
             //无路可走
             Debug.Log("no road to go...");
             ret = CarMotion.Move.NONE;
+            carMotion.runStatus = CarMotion.RunStatus.STOP;
+            if (iCarDelegate != null)
+            {
+                iCarDelegate.CarUpdateStatus(this, carMotion.runStatus);
+            }
+
         }
 
         return ret;

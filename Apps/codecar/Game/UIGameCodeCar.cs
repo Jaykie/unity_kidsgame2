@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using LitJson;
 using UnityEngine;
 using UnityEngine.UI;
-public class UIGameCodeCar : UIGameBase
+public class UIGameCodeCar : UIGameBase, ICar
 {
     GameCodeCar gameCodeCarPrefab;
     GameCodeCar gameCodeCar;
@@ -75,6 +75,7 @@ public class UIGameCodeCar : UIGameBase
     {
         CodeCarItemInfo info = GetGuankaItemInfo(GameManager.gameLevel) as CodeCarItemInfo;
         gameCodeCar.ParseMapInfo(info);
+        gameCodeCar.SetCarInterface(this);
         InitCmdRun();
     }
     public override int GetGuankaTotal()
@@ -145,5 +146,21 @@ public class UIGameCodeCar : UIGameBase
 
     }
 
+    public void Reset()
+    {
+        if (gameCodeCar != null)
+        {
+            gameCodeCar.Reset();
+        }
+        uiCmdBarRun.Reset();
+        uiCmdBarSelect.Reset();
+    }
+
+    #region ICar
+    public void CarUpdateStatus(UICar car, CarMotion.RunStatus status)
+    {
+        Debug.Log("CarUpdateStatus status=" + status);
+    }
+    #endregion
 }
 

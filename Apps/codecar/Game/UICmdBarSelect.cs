@@ -80,9 +80,14 @@ public class UICmdBarSelect : UIView
         listItem.Add(item);
 
 
-    } 
- 
-
+    }
+    public void Reset()
+    {
+        foreach (UIItemSelect item in listItem)
+        {
+            item.Reset();
+        }
+    }
 }
 
 

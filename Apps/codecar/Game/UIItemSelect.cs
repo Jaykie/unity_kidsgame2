@@ -13,14 +13,13 @@ public class UIItemSelect : UIView
     UICmdItem uiCmdItemPrefab;
 
     UICmdItem uiCmdItemBg;
-    UICmdItem uiCmdItemFt;
     public Text textCount;
     public int index;
     public UICmdItem.CmdType cmdType;
     public int maxCount;
     int count;
 
-    List<object> listItem;
+    List<object> listItemFt;
     bool isFirstTouchMove;
 
     /// <summary>
@@ -28,7 +27,7 @@ public class UIItemSelect : UIView
     /// </summary>
     void Awake()
     {
-        listItem = new List<object>();
+        listItemFt = new List<object>();
         GameObject obj = PrefabCache.main.Load(AppRes.PREFAB_CmdItem);
         uiCmdItemPrefab = obj.GetComponent<UICmdItem>();
         count = 0;
@@ -46,7 +45,17 @@ public class UIItemSelect : UIView
     {
 
     }
-
+    public void Reset()
+    {
+        count = maxCount;
+        UpdateCount();
+        foreach (UICmdItem item in listItemFt)
+        {
+            item.transform.parent = this.transform;
+            item.transform.localPosition = item.localPosNormal;
+        }
+        SetTextToTopMost();
+    }
     UICmdItem CreateItem(UICmdItem.CmdType type)
     {
         UICmdItem cmdItem = (UICmdItem)GameObject.Instantiate(uiCmdItemPrefab);
@@ -58,7 +67,7 @@ public class UIItemSelect : UIView
         cmdItem.callBackTouch = OnUITouchEvent;
         cmdItem.UpdateItem();
         cmdItem.localPosNormal = cmdItem.transform.localPosition;
-        uiCmdItemBg = cmdItem;
+
 
         return cmdItem;
     }
@@ -70,7 +79,7 @@ public class UIItemSelect : UIView
         uiCmdItemBg.enableTouch = false;
         for (int i = 0; i < maxCount; i++)
         {
-            uiCmdItemFt = CreateItem(type);
+            listItemFt.Add(CreateItem(type));
         }
 
         SetTextToTopMost();
@@ -81,6 +90,14 @@ public class UIItemSelect : UIView
     void UpdateCount()
     {
         textCount.text = count.ToString();
+        if (count == 0)
+        {
+            uiCmdItemBg.SetLock(true);
+        }
+        else
+        {
+            uiCmdItemBg.SetLock(false);
+        }
     }
     void SetTextToTopMost()
     {
@@ -163,7 +180,7 @@ public class UIItemSelect : UIView
         Transform parent = uiCmdBarRun.GetItemParent(item);
         if (parent != null)
         {
-            //显示在run bar上面
+            //命令移动到run bar上面
             item.transform.parent = parent;
             RectTransform rt = item.GetComponent<RectTransform>();
             rt.anchoredPosition = Vector2.zero;
